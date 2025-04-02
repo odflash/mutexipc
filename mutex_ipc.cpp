@@ -6,7 +6,7 @@
 
 asio::io_context io;
 
-MutexIpc *m1{}, * m2{};
+MutexIpc* m1{}, * m2{};
 
 void spi_write()
 {
@@ -39,12 +39,12 @@ void spi_write()
 
 void senderE1(MutexIpcEvent_ event)
 {
-  m2->event(event);
+  io.post([event]() {m2->event(event); });
 }
 
 void senderE2(MutexIpcEvent_ event)
 {
-  m1->event(event);
+  io.post([event]() {m1->event(event); });
 }
 
 void do_loop(MutexIpc& mutex)
@@ -61,7 +61,7 @@ void do_loop(MutexIpc& mutex)
       mutex.unlock();
       do_loop(mutex);
     });
-  while (true) {}
+  while (true) { std::this_thread::sleep_for(std::chrono::seconds(1)); }
 }
 
 void thread_loop_1()
@@ -78,7 +78,7 @@ void thread_loop_2()
   MutexIpc mutex(io, senderE2);
   m2 = &mutex;
   std::this_thread::sleep_for(std::chrono::seconds(1));
-  std::cout << "Thread 1 loop\n";
+  std::cout << "Thread 2 loop\n";
   do_loop(mutex);
 }
 

@@ -5,7 +5,7 @@
 
 void MutexIpc::lock(FMutexIpc* cb)
 {
-  if (!m_cb)
+  if (m_cb)
   {
     if (cb) cb(std::make_error_code(std::errc::resource_unavailable_try_again), *this);
     return;
@@ -65,7 +65,7 @@ void MutexIpc::event(MutexIpcEvent_ e)
   switch (e)
   {
   case MutexIpcEvent_::REQUST_LOCK:
-    m_isLockReqested = m_isLocked.load();
+    m_isLockReqested = true;
     m_sedner(m_isLocked ? MutexIpcEvent_::LOCK_DENIED : MutexIpcEvent_::LOCK_ACCEPTED);
     break;
 
@@ -73,10 +73,12 @@ void MutexIpc::event(MutexIpcEvent_ e)
     break;
 
   case MutexIpcEvent_::LOCK_ACCEPTED:
+    m_isLocked = true;
     if (m_cb)
     {
-      m_cb({}, *this);
+      auto cb = m_cb;
       m_cb = {};
+      cb({}, *this);
     }
     break;
   }
