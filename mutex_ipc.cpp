@@ -27,7 +27,6 @@ void spi_write()
   std::vector<int> randomVector(size);
   std::generate(randomVector.begin(), randomVector.end(), [&]() { return num_dist(gen); });
 
-
   std::cout << "Vector size: " << randomVector.size() << std::endl;
   std::cout << "Vector elements: ";
   for (int num : randomVector) {

@@ -79,6 +79,13 @@ void MutexIpc::event(MutexIpcEvent_ e)
 
   case MutexIpcEvent_::LOCK_ACCEPTED:
     std::cout << "LOCK_ACCEPTED" << m_id << std::endl;
+    
+    if (m_tryLockTinmer)
+    {
+      m_tryLockTinmer->cancel();
+      m_tryLockTinmer = {};
+    }
+
     m_isLocked = true;
     if (m_cb)
     {
