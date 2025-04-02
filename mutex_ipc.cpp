@@ -6,39 +6,80 @@
 
 asio::io_context io;
 
-std::reference_wrapper<MutexIpc> m1, m2;
+MutexIpc *m1{}, * m2{};
 
 void spi_write()
 {
-  
-  
-  std::cout << "spi_write\n";
+  std::random_device rd;
+  std::mt19937 gen(rd());
+
+  std::uniform_int_distribution<> size_dist(5, 200);
+
+  int size = size_dist(gen);
+
+  std::uniform_int_distribution<> num_dist('0', '9');
+  std::uniform_int_distribution<> time_dist(300, 600);
+
+  auto time = time_dist(gen);
+
+  std::this_thread::sleep_for(asio::chrono::microseconds(time));
+
+  std::vector<int> randomVector(size);
+  std::generate(randomVector.begin(), randomVector.end(), [&]() { return num_dist(gen); });
+
+
+  std::cout << "Vector size: " << randomVector.size() << std::endl;
+  std::cout << "Vector elements: ";
+  for (int num : randomVector) {
+    std::cout << num << " ";
+  }
+  std::cout << std::endl;
+
 }
 
 void senderE1(MutexIpcEvent_ event)
 {
-  m2.get().event(event);
+  m2->event(event);
 }
 
 void senderE2(MutexIpcEvent_ event)
 {
-  m1.get().event(event);
+  m1->event(event);
+}
+
+void do_loop(MutexIpc& mutex)
+{
+  mutex.lock([](const std::error_code& ec, MutexIpc& mutex)
+    {
+      if (ec)
+      {
+        std::cout << "Error: " << ec.message() << '\n';
+        return;
+      }
+      std::cout << "Lock\n";
+      spi_write();
+      mutex.unlock();
+      do_loop(mutex);
+    });
+  while (true) {}
 }
 
 void thread_loop_1()
 {
   MutexIpc mutex(io, senderE1);
-  m1 = mutex;
-
+  m1 = &mutex;
+  std::this_thread::sleep_for(std::chrono::seconds(1));
   std::cout << "Thread 1 loop\n";
+  do_loop(mutex);
 }
 
 void thread_loop_2()
 {
   MutexIpc mutex(io, senderE2);
-  m2 = mutex;
-
+  m2 = &mutex;
+  std::this_thread::sleep_for(std::chrono::seconds(1));
   std::cout << "Thread 1 loop\n";
+  do_loop(mutex);
 }
 
 int main()
@@ -66,30 +107,5 @@ int main()
   t1.join();
   t2.join();
   tio.join();
-  mutex.lock([](const std::error_code& ec, MutexIpc& mutex)
-    {
-      if (ec)
-      {
-        std::cout << "Error: " << ec.message() << '\n';
-        return;
-      }
-
-      std::cout << "Lock\n";
-      mutex.unlock();
-    });
-
-  mutex.try_lock(std::chrono::seconds(1), [](const std::error_code& ec, MutexIpc& mutex)
-    {
-      if (ec)
-      {
-        std::cout << "Error: " << ec.message() << '\n';
-        return;
-      }
-      std::cout << "Try lock\n";
-      mutex.unlock();
-    });
-lock();
-
-  io.run();
   return 0;
 }
