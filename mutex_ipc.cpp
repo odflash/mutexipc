@@ -61,7 +61,6 @@ void do_loop(MutexIpc& mutex)
       mutex.unlock();
       do_loop(mutex);
     });
-  while (true) { std::this_thread::sleep_for(std::chrono::seconds(1)); }
 }
 
 void thread_loop_1()
@@ -71,6 +70,7 @@ void thread_loop_1()
   std::this_thread::sleep_for(std::chrono::seconds(1));
   std::cout << "Thread 1 loop\n";
   do_loop(mutex);
+  while (true) { std::this_thread::sleep_for(std::chrono::seconds(1)); }
 }
 
 void thread_loop_2()
@@ -80,6 +80,7 @@ void thread_loop_2()
   std::this_thread::sleep_for(std::chrono::seconds(1));
   std::cout << "Thread 2 loop\n";
   do_loop(mutex);
+  while (true) { std::this_thread::sleep_for(std::chrono::seconds(1)); }
 }
 
 int main()
