@@ -4,6 +4,8 @@
 #include <chrono>
 #include <iostream>
 
+int MutexIpc::id_;
+
 void MutexIpc::lock(FMutexIpc* cb)
 {
   if (m_cb)
@@ -66,17 +68,17 @@ void MutexIpc::event(MutexIpcEvent_ e)
   switch (e)
   {
   case MutexIpcEvent_::REQUST_LOCK:
-    std::cout << "REQUST_LOCK" << std::endl;
+    std::cout << "REQUST_LOCK" << m_id << std::endl;
     m_isLockReqested = true;
     m_sedner(m_isLocked ? MutexIpcEvent_::LOCK_DENIED : MutexIpcEvent_::LOCK_ACCEPTED);
     break;
 
   case MutexIpcEvent_::LOCK_DENIED:
-    std::cout << "LOCK_DENIED" << std::endl; 
+    std::cout << "LOCK_DENIED" << m_id << std::endl;
     break;
 
   case MutexIpcEvent_::LOCK_ACCEPTED:
-    std::cout << "LOCK_ACCEPTED" << std::endl;
+    std::cout << "LOCK_ACCEPTED" << m_id << std::endl;
     m_isLocked = true;
     if (m_cb)
     {

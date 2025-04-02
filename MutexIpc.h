@@ -20,13 +20,13 @@ class MutexIpc
 {
 public:
 
-  MutexIpc(asio::io_context&io, FEventSenter& sedner) :m_io{io}, m_sedner{ sedner } {}
+  MutexIpc(asio::io_context&io, FEventSenter& sedner) :m_io{io}, m_sedner{ sedner }{}
 
   void lock(FMutexIpc *cb);
   void unlock();
   void try_lock(std::chrono::steady_clock::duration wait, FMutexIpc cb);
   void event(MutexIpcEvent_);
-
+  auto id(){return m_id;}
 private:
   asio::io_context& m_io;
   FEventSenter& m_sedner;
@@ -35,4 +35,6 @@ private:
   std::atomic<bool> m_isLocked{};
   std::atomic<bool> m_isLockReqested{};
   std::shared_ptr<asio::steady_timer> m_tryLockTinmer{};
+  const int m_id{ id_++};
+  static int id_;
 };

@@ -56,7 +56,7 @@ void do_loop(MutexIpc& mutex)
         std::cout << "Error: " << ec.message() << '\n';
         return;
       }
-      std::cout << "Lock\n";
+      std::cout << "Lock" << mutex.id();
       spi_write();
       mutex.unlock();
       do_loop(mutex);
